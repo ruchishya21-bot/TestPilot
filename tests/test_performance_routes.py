@@ -3,9 +3,9 @@ from application.routes import performance
 
 class TestPerformanceDashboard:
 
-    def test_performance_dashboard_loads(self, client):
+    def test_performance_dashboard_loads(self, authenticated_client):
 
-        response = client.get("/qa/performance")
+        response = authenticated_client.get("/qa/performance")
 
         assert response.status_code == 200
         assert b"Performance Analytics" in response.data
@@ -15,7 +15,7 @@ class TestPerformanceDashboard:
 
 class TestPerformanceExecution:
 
-    def test_run_performance_success(self, client, monkeypatch):
+    def test_run_performance_success(self, authenticated_client, monkeypatch):
 
         expected_results = {
             "id": "test-run-123",
@@ -34,7 +34,7 @@ class TestPerformanceExecution:
             lambda **kwargs: expected_results
         )
 
-        response = client.post(
+        response = authenticated_client.post(
             "/api/performance/run",
             json={
                 "endpoint": "/health",
@@ -47,18 +47,18 @@ class TestPerformanceExecution:
         assert response.get_json()["success"] is True
         assert response.get_json()["results"] == expected_results
 
-    def test_run_performance_invalid_request_count(self, client):
+    def test_run_performance_invalid_request_count(self, authenticated_client):
 
-        response = client.post(
+        response = authenticated_client.post(
             "/api/performance/run",
             json={"total_requests": 0}
         )
 
         assert response.status_code == 400
 
-    def test_run_performance_invalid_concurrency(self, client):
+    def test_run_performance_invalid_concurrency(self, authenticated_client):
 
-        response = client.post(
+        response = authenticated_client.post(
             "/api/performance/run",
             json={
                 "total_requests": 10,
@@ -69,7 +69,7 @@ class TestPerformanceExecution:
         assert response.status_code == 400
 
     def test_run_performance_target_unavailable(
-        self, client, monkeypatch
+        self, authenticated_client, monkeypatch
     ):
 
         def raise_runtime_error(**kwargs):
@@ -81,7 +81,7 @@ class TestPerformanceExecution:
             raise_runtime_error
         )
 
-        response = client.post(
+        response = authenticated_client.post(
             "/api/performance/run",
             json={
                 "endpoint": "/health",
@@ -95,7 +95,7 @@ class TestPerformanceExecution:
 
 class TestPerformanceHistory:
 
-    def test_performance_history_success(self, client, monkeypatch):
+    def test_performance_history_success(self, authenticated_client, monkeypatch):
 
         sample_history = [
             {
@@ -115,15 +115,15 @@ class TestPerformanceHistory:
             lambda limit=20: sample_history
         )
 
-        response = client.get("/api/performance/history")
+        response = authenticated_client.get("/api/performance/history")
 
         assert response.status_code == 200
         assert response.get_json()["total_runs"] == 1
         assert response.get_json()["history"] == sample_history
 
-    def test_performance_history_invalid_limit(self, client):
+    def test_performance_history_invalid_limit(self, authenticated_client):
 
-        response = client.get(
+        response = authenticated_client.get(
             "/api/performance/history?limit=101"
         )
 
@@ -133,7 +133,7 @@ class TestPerformanceHistory:
 class TestPerformanceStatistics:
 
     def test_performance_statistics_success(
-        self, client, monkeypatch
+        self, authenticated_client, monkeypatch
     ):
 
         sample_history = [
@@ -165,7 +165,7 @@ class TestPerformanceStatistics:
             lambda limit=100: sample_history
         )
 
-        response = client.get("/api/performance/stats")
+        response = authenticated_client.get("/api/performance/stats")
 
         data = response.get_json()
 
@@ -180,7 +180,7 @@ class TestPerformanceStatistics:
         assert data["stats"]["average_throughput"] == 75.0
 
     def test_performance_statistics_empty_history(
-        self, client, monkeypatch
+        self, authenticated_client, monkeypatch
     ):
 
         monkeypatch.setattr(
@@ -195,7 +195,7 @@ class TestPerformanceStatistics:
             lambda limit=100: []
         )
 
-        response = client.get("/api/performance/stats")
+        response = authenticated_client.get("/api/performance/stats")
 
         data = response.get_json()
 

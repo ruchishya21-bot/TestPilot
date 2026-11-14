@@ -6,7 +6,7 @@ import application.routes.qa as qa_routes
 @pytest.mark.api
 class TestQADashboard:
 
-    def test_dashboard_without_previous_runs(self, client, monkeypatch):
+    def test_dashboard_without_previous_runs(self, authenticated_client, monkeypatch):
 
         monkeypatch.setattr(
             qa_routes,
@@ -14,11 +14,11 @@ class TestQADashboard:
             lambda limit: []
         )
 
-        response = client.get("/qa")
+        response = authenticated_client.get("/qa")
 
         assert response.status_code == 200
 
-    def test_dashboard_with_existing_runs(self, client, monkeypatch):
+    def test_dashboard_with_existing_runs(self, authenticated_client, monkeypatch):
 
         runs = [
             {
@@ -92,11 +92,11 @@ class TestQADashboard:
             lambda run_id: details
         )
 
-        response = client.get("/qa")
+        response = authenticated_client.get("/qa")
 
         assert response.status_code == 200
 
-    def test_dashboard_with_valid_run_id(self, client, monkeypatch):
+    def test_dashboard_with_valid_run_id(self, authenticated_client, monkeypatch):
 
         run = {
             "id": "run-002",
@@ -125,11 +125,11 @@ class TestQADashboard:
             }
         )
 
-        response = client.get("/qa?run_id=run-002")
+        response = authenticated_client.get("/qa?run_id=run-002")
 
         assert response.status_code == 200
 
-    def test_dashboard_with_invalid_run_id(self, client, monkeypatch):
+    def test_dashboard_with_invalid_run_id(self, authenticated_client, monkeypatch):
 
         run = {
             "id": "run-003",
@@ -162,13 +162,13 @@ class TestQADashboard:
             mock_details
         )
 
-        response = client.get("/qa?run_id=invalid")
+        response = authenticated_client.get("/qa?run_id=invalid")
 
         assert response.status_code == 200
 
-    def test_dashboard_comparison_page(self, client):
+    def test_dashboard_comparison_page(self, authenticated_client):
 
-        response = client.get("/qa/compare")
+        response = authenticated_client.get("/qa/compare")
 
         assert response.status_code == 200
 
@@ -176,7 +176,7 @@ class TestQADashboard:
 @pytest.mark.api
 class TestQAExecutionAPI:
 
-    def test_start_execution_success(self, client, monkeypatch):
+    def test_start_execution_success(self, authenticated_client, monkeypatch):
 
         monkeypatch.setattr(
             qa_routes,
@@ -187,7 +187,7 @@ class TestQAExecutionAPI:
             }
         )
 
-        response = client.post(
+        response = authenticated_client.post(
             "/api/qa/start",
             json={"test_type": "api"}
         )
@@ -196,7 +196,7 @@ class TestQAExecutionAPI:
         assert response.json["success"] is True
         assert response.json["execution"]["test_type"] == "api"
 
-    def test_start_execution_default_suite(self, client, monkeypatch):
+    def test_start_execution_default_suite(self, authenticated_client, monkeypatch):
 
         monkeypatch.setattr(
             qa_routes,
@@ -204,12 +204,12 @@ class TestQAExecutionAPI:
             lambda test_type: {"test_type": test_type}
         )
 
-        response = client.post("/api/qa/start", json={})
+        response = authenticated_client.post("/api/qa/start", json={})
 
         assert response.status_code == 202
         assert response.json["execution"]["test_type"] == "all"
 
-    def test_start_execution_invalid_suite(self, client, monkeypatch):
+    def test_start_execution_invalid_suite(self, authenticated_client, monkeypatch):
 
         def mock_start(test_type):
             raise ValueError("Invalid test suite.")
@@ -220,7 +220,7 @@ class TestQAExecutionAPI:
             mock_start
         )
 
-        response = client.post(
+        response = authenticated_client.post(
             "/api/qa/start",
             json={"test_type": "invalid"}
         )
@@ -228,7 +228,7 @@ class TestQAExecutionAPI:
         assert response.status_code == 400
         assert response.json["success"] is False
 
-    def test_start_execution_runtime_error(self, client, monkeypatch):
+    def test_start_execution_runtime_error(self, authenticated_client, monkeypatch):
 
         def mock_start(test_type):
             raise RuntimeError("Target application is unhealthy.")
@@ -239,7 +239,7 @@ class TestQAExecutionAPI:
             mock_start
         )
 
-        response = client.post(
+        response = authenticated_client.post(
             "/api/qa/start",
             json={"test_type": "all"}
         )
@@ -247,7 +247,7 @@ class TestQAExecutionAPI:
         assert response.status_code == 409
         assert response.json["success"] is False
 
-    def test_start_execution_unexpected_error(self, client, monkeypatch):
+    def test_start_execution_unexpected_error(self, authenticated_client, monkeypatch):
 
         def mock_start(test_type):
             raise Exception("Unexpected error.")
@@ -258,7 +258,7 @@ class TestQAExecutionAPI:
             mock_start
         )
 
-        response = client.post(
+        response = authenticated_client.post(
             "/api/qa/start",
             json={"test_type": "all"}
         )
@@ -266,7 +266,7 @@ class TestQAExecutionAPI:
         assert response.status_code == 500
         assert response.json["success"] is False
 
-    def test_execution_status(self, client, monkeypatch):
+    def test_execution_status(self, authenticated_client, monkeypatch):
 
         monkeypatch.setattr(
             qa_routes,
@@ -274,13 +274,13 @@ class TestQAExecutionAPI:
             lambda: {"status": "running"}
         )
 
-        response = client.get("/api/qa/status")
+        response = authenticated_client.get("/api/qa/status")
 
         assert response.status_code == 200
         assert response.json["success"] is True
         assert response.json["execution"]["status"] == "running"
 
-    def test_execution_logs(self, client, monkeypatch):
+    def test_execution_logs(self, authenticated_client, monkeypatch):
 
         monkeypatch.setattr(
             qa_routes,
@@ -288,14 +288,14 @@ class TestQAExecutionAPI:
             lambda: ["Test started", "Test completed"]
         )
 
-        response = client.get("/api/qa/logs")
+        response = authenticated_client.get("/api/qa/logs")
 
         assert response.status_code == 200
         assert len(response.json["logs"]) == 2
 
-    def test_available_test_suites(self, client):
+    def test_available_test_suites(self, authenticated_client):
 
-        response = client.get("/api/qa/suites")
+        response = authenticated_client.get("/api/qa/suites")
 
         assert response.status_code == 200
         assert response.json["success"] is True
@@ -306,7 +306,7 @@ class TestQAExecutionAPI:
 @pytest.mark.api
 class TestQAAnalyticsAPI:
 
-    def test_analytics_with_execution_history(self, client, monkeypatch):
+    def test_analytics_with_execution_history(self, authenticated_client, monkeypatch):
 
         runs = [
             {
@@ -345,7 +345,7 @@ class TestQAAnalyticsAPI:
             lambda run_id: details
         )
 
-        response = client.get("/api/qa/analytics")
+        response = authenticated_client.get("/api/qa/analytics")
 
         assert response.status_code == 200
         assert response.json["success"] is True
@@ -354,7 +354,7 @@ class TestQAAnalyticsAPI:
         assert response.json["summary"]["pass_rate"] == 80.0
         assert response.json["category_distribution"]["API"] == 2
 
-    def test_analytics_without_execution_history(self, client, monkeypatch):
+    def test_analytics_without_execution_history(self, authenticated_client, monkeypatch):
 
         monkeypatch.setattr(
             qa_routes,
@@ -362,13 +362,13 @@ class TestQAAnalyticsAPI:
             lambda limit: []
         )
 
-        response = client.get("/api/qa/analytics")
+        response = authenticated_client.get("/api/qa/analytics")
 
         assert response.status_code == 200
         assert response.json["summary"]["total_runs"] == 0
         assert response.json["summary"]["pass_rate"] == 0
 
-    def test_analytics_with_zero_test_run(self, client, monkeypatch):
+    def test_analytics_with_zero_test_run(self, authenticated_client, monkeypatch):
 
         runs = [
             {
@@ -399,12 +399,12 @@ class TestQAAnalyticsAPI:
             }
         )
 
-        response = client.get("/api/qa/analytics")
+        response = authenticated_client.get("/api/qa/analytics")
 
         assert response.status_code == 200
         assert response.json["execution_trends"][0]["pass_rate"] == 0
 
-    def test_analytics_database_error(self, client, monkeypatch):
+    def test_analytics_database_error(self, authenticated_client, monkeypatch):
 
         def mock_runs(limit):
             raise Exception("Database unavailable.")
@@ -415,7 +415,7 @@ class TestQAAnalyticsAPI:
             mock_runs
         )
 
-        response = client.get("/api/qa/analytics")
+        response = authenticated_client.get("/api/qa/analytics")
 
         assert response.status_code == 500
         assert response.json["success"] is False
@@ -424,7 +424,7 @@ class TestQAAnalyticsAPI:
 @pytest.mark.api
 class TestQAFailureAPI:
 
-    def test_failure_analysis_success(self, client, monkeypatch):
+    def test_failure_analysis_success(self, authenticated_client, monkeypatch):
 
         failures = [
             {
@@ -439,12 +439,12 @@ class TestQAFailureAPI:
             lambda limit: failures
         )
 
-        response = client.get("/api/qa/failures")
+        response = authenticated_client.get("/api/qa/failures")
 
         assert response.status_code == 200
         assert response.json["total_failures"] == 1
 
-    def test_failure_analysis_empty(self, client, monkeypatch):
+    def test_failure_analysis_empty(self, authenticated_client, monkeypatch):
 
         monkeypatch.setattr(
             qa_routes,
@@ -452,12 +452,12 @@ class TestQAFailureAPI:
             lambda limit: []
         )
 
-        response = client.get("/api/qa/failures")
+        response = authenticated_client.get("/api/qa/failures")
 
         assert response.status_code == 200
         assert response.json["total_failures"] == 0
 
-    def test_failure_analysis_error(self, client, monkeypatch):
+    def test_failure_analysis_error(self, authenticated_client, monkeypatch):
 
         def mock_failures(limit):
             raise Exception("Failure database error.")
@@ -468,7 +468,7 @@ class TestQAFailureAPI:
             mock_failures
         )
 
-        response = client.get("/api/qa/failures")
+        response = authenticated_client.get("/api/qa/failures")
 
         assert response.status_code == 500
         assert response.json["success"] is False
@@ -477,21 +477,21 @@ class TestQAFailureAPI:
 @pytest.mark.api
 class TestQAComparisonAPI:
 
-    def test_comparison_missing_parameters(self, client):
+    def test_comparison_missing_parameters(self, authenticated_client):
 
-        response = client.get("/api/qa/compare")
+        response = authenticated_client.get("/api/qa/compare")
 
         assert response.status_code == 400
 
-    def test_comparison_same_run_ids(self, client):
+    def test_comparison_same_run_ids(self, authenticated_client):
 
-        response = client.get(
+        response = authenticated_client.get(
             "/api/qa/compare?baseline=run-1&comparison=run-1"
         )
 
         assert response.status_code == 400
 
-    def test_comparison_success(self, client, monkeypatch):
+    def test_comparison_success(self, authenticated_client, monkeypatch):
 
         monkeypatch.setattr(
             qa_routes,
@@ -501,14 +501,14 @@ class TestQAComparisonAPI:
             }
         )
 
-        response = client.get(
+        response = authenticated_client.get(
             "/api/qa/compare?baseline=run-1&comparison=run-2"
         )
 
         assert response.status_code == 200
         assert response.json["success"] is True
 
-    def test_comparison_missing_runs(self, client, monkeypatch):
+    def test_comparison_missing_runs(self, authenticated_client, monkeypatch):
 
         monkeypatch.setattr(
             qa_routes,
@@ -516,13 +516,13 @@ class TestQAComparisonAPI:
             lambda baseline, comparison: None
         )
 
-        response = client.get(
+        response = authenticated_client.get(
             "/api/qa/compare?baseline=run-1&comparison=run-2"
         )
 
         assert response.status_code == 404
 
-    def test_comparison_unexpected_error(self, client, monkeypatch):
+    def test_comparison_unexpected_error(self, authenticated_client, monkeypatch):
 
         def mock_compare(baseline, comparison):
             raise Exception("Comparison failed.")
@@ -533,7 +533,7 @@ class TestQAComparisonAPI:
             mock_compare
         )
 
-        response = client.get(
+        response = authenticated_client.get(
             "/api/qa/compare?baseline=run-1&comparison=run-2"
         )
 
@@ -544,7 +544,7 @@ class TestQAComparisonAPI:
 @pytest.mark.api
 class TestQARunHistoryAPI:
 
-    def test_get_test_runs_success(self, client, monkeypatch):
+    def test_get_test_runs_success(self, authenticated_client, monkeypatch):
 
         runs = [
             {"id": "run-001"},
@@ -557,12 +557,12 @@ class TestQARunHistoryAPI:
             lambda limit: runs
         )
 
-        response = client.get("/api/qa/runs")
+        response = authenticated_client.get("/api/qa/runs")
 
         assert response.status_code == 200
         assert response.json["total_runs"] == 2
 
-    def test_get_test_runs_empty(self, client, monkeypatch):
+    def test_get_test_runs_empty(self, authenticated_client, monkeypatch):
 
         monkeypatch.setattr(
             qa_routes,
@@ -570,12 +570,12 @@ class TestQARunHistoryAPI:
             lambda limit: []
         )
 
-        response = client.get("/api/qa/runs")
+        response = authenticated_client.get("/api/qa/runs")
 
         assert response.status_code == 200
         assert response.json["total_runs"] == 0
 
-    def test_get_test_runs_error(self, client, monkeypatch):
+    def test_get_test_runs_error(self, authenticated_client, monkeypatch):
 
         def mock_runs(limit):
             raise Exception("Unable to access history.")
@@ -586,7 +586,7 @@ class TestQARunHistoryAPI:
             mock_runs
         )
 
-        response = client.get("/api/qa/runs")
+        response = authenticated_client.get("/api/qa/runs")
 
         assert response.status_code == 500
         assert response.json["success"] is False

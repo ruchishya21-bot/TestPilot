@@ -212,3 +212,12 @@ def pytest_runtest_makereport(item, call):
                 print(
                     f"\nScreenshot capture failed: {error}"
                 )
+
+@pytest.fixture
+def authenticated_client(client):
+
+    with client.session_transaction() as session:
+        session["user_id"] = 1
+        session["username"] = "testuser"
+
+    return client

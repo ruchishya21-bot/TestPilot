@@ -1,8 +1,11 @@
+@'
 # Python
 __pycache__/
 *.py[cod]
 *.pyd
 *.egg-info/
+build/
+dist/
 
 # Virtual environments
 venv/
@@ -18,17 +21,20 @@ env/
 .env.*
 !.env.example
 
-# Pytest
+# Pytest and coverage
 .pytest_cache/
 .coverage
+.coverage.*
 htmlcov/
 
 # Generated reports
 reports/*
 !reports/.gitkeep
 
-# Screenshots
+# Screenshots and temporary files
 screenshots/
+*.tmp
+*.bak
 
 # Local databases
 *.db
@@ -42,3 +48,4 @@ screenshots/
 .DS_Store
 Thumbs.db
 desktop.ini
+'@ | Set-Content .gitignore -Encoding UTF8
