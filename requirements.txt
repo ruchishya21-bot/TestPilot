@@ -1,5 +1,6 @@
 pytest
 pytest-xdist
+pytest-cov
 selenium
 requests
 pytest-html
