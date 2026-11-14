@@ -108,9 +108,13 @@ jobs:
 
             Write-Host "TestPilot application is healthy."
 
-            Write-Host "Executing automated test suite..."
+            Write-Host "Executing automated test suite with coverage..."
 
             pytest tests -n 2 `
+              --cov=application `
+              --cov-report=term-missing `
+              --cov-report=html:reports/coverage `
+              --cov-report=xml:reports/coverage.xml `
               --html=reports/report.html `
               --self-contained-html `
               --alluredir=reports/allure-results
@@ -132,11 +136,11 @@ jobs:
 
           exit $testExitCode
 
-      - name: Upload Test Reports
+      - name: Upload Test Reports and Coverage
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: testpilot-test-reports
+          name: testpilot-test-reports-and-coverage
           path: |
             reports/
             screenshots/
