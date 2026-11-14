@@ -1,6 +1,6 @@
-=name: TestPilot CI Pipeline
+name: TestPilot CI Pipeline
 
-on:
+"on":
   push:
     branches:
       - main
