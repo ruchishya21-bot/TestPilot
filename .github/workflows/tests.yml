@@ -34,17 +34,17 @@ jobs:
           pip install -r requirements.txt
 
       - name: Create Report Directories
+        shell: pwsh
         run: |
           New-Item -ItemType Directory -Force reports
           New-Item -ItemType Directory -Force screenshots
-        shell: pwsh
 
       - name: Start TestPilot Application
         shell: pwsh
         run: |
           $process = Start-Process `
             -FilePath python `
-            -ArgumentList "-c", "from application.app import app; app.run(host='127.0.0.1', port=5000)" `
+            -ArgumentList "-m flask --app application.app run --host 127.0.0.1 --port 5000" `
             -PassThru `
             -RedirectStandardOutput flask.log `
             -RedirectStandardError flask-error.log
