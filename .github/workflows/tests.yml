@@ -1,4 +1,4 @@
-name: TestPilot CI Pipeline
+=name: TestPilot CI Pipeline
 
 on:
   push:
@@ -21,10 +21,10 @@ jobs:
     steps:
 
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set Up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.14"
 
@@ -108,7 +108,7 @@ jobs:
 
             Write-Host "TestPilot application is healthy."
 
-            Write-Host "Executing automated test suite with coverage..."
+            Write-Host "Executing automated tests with coverage..."
 
             pytest tests -n 2 `
               --cov=application `
@@ -138,7 +138,7 @@ jobs:
 
       - name: Upload Test Reports and Coverage
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: testpilot-test-reports-and-coverage
           path: |
