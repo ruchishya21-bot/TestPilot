@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>TestPilot | Flaky Test Analytics</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0b1020;
+            color: #e5e7eb;
+            min-height: 100vh;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR */
+
+        .sidebar {
+            width: 245px;
+            background: #10172a;
+            border-right: 1px solid #202b42;
+            padding: 30px 20px;
+            flex-shrink: 0;
+        }
+
+        .brand {
+            font-size: 23px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .brand span {
+            color: #818cf8;
+        }
+
+        .brand-subtitle {
+            font-size: 11px;
+            color: #64748b;
+            letter-spacing: 2px;
+            margin-bottom: 45px;
+        }
+
+        .nav-label {
+            font-size: 10px;
+            color: #64748b;
+            letter-spacing: 1.5px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 13px 15px;
+            margin-bottom: 8px;
+            border-radius: 9px;
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 13px;
+            transition: 0.2s;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: #242d50;
+            color: #a5b4fc;
+        }
+
+        .sidebar-footer {
+            margin-top: 60px;
+            padding: 15px;
+            background: #151e33;
+            border-radius: 10px;
+            font-size: 11px;
+            color: #64748b;
+            line-height: 1.8;
+        }
+
+        /* MAIN */
+
+        .main {
+            flex: 1;
+            padding: 35px 42px;
+            min-width: 0;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 38px;
+        }
+
+        .page-title {
+            font-size: 25px;
+            font-weight: 800;
+            color: #f8fafc;
+        }
+
+        .page-subtitle {
+            color: #8491a8;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+
+        .live-badge {
+            background: #102f2b;
+            color: #34d399;
+            border: 1px solid #155e4b;
+            padding: 9px 14px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .live-dot {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #34d399;
+            margin-right: 7px;
+        }
+
+        /* STATS */
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #141d32;
+            border: 1px solid #26334c;
+            border-radius: 15px;
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::after {
+            content: "";
+            position: absolute;
+            width: 90px;
+            height: 90px;
+            right: -30px;
+            top: -30px;
+            border-radius: 50%;
+            background: rgba(129, 140, 248, 0.08);
+        }
+
+        .stat-label {
+            color: #94a3b8;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 35px;
+            font-weight: 800;
+            color: #f8fafc;
+            margin-top: 17px;
+        }
+
+        .stat-description {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 9px;
+        }
+
+        .purple {
+            color: #a5b4fc;
+        }
+
+        .orange {
+            color: #fb923c;
+        }
+
+        .green {
+            color: #34d399;
+        }
+
+        /* PANELS */
+
+        .panel {
+            background: #141d32;
+            border: 1px solid #26334c;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 24px;
+        }
+
+        .panel-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #f1f5f9;
+        }
+
+        .panel-description {
+            font-size: 11px;
+            color: #718096;
+            margin-top: 7px;
+        }
+
+        .refresh-btn {
+            background: #303c70;
+            border: 1px solid #4855a0;
+            color: #c7d2fe;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .refresh-btn:hover {
+            background: #414e8e;
+        }
+
+        /* ANALYTICS */
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .analytics-box {
+            background: #10182b;
+            border: 1px solid #26334c;
+            border-radius: 11px;
+            padding: 20px;
+        }
+
+        .analytics-heading {
+            color: #94a3b8;
+            font-size: 12px;
+            margin-bottom: 18px;
+        }
+
+        .analytics-number {
+            font-size: 27px;
+            font-weight: 800;
+            color: #f8fafc;
+        }
+
+        .analytics-caption {
+            color: #64748b;
+            font-size: 11px;
+            margin-top: 7px;
+        }
+
+        /* TABLE */
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 650px;
+        }
+
+        th {
+            text-align: left;
+            padding: 15px 12px;
+            font-size: 10px;
+            color: #718096;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #29364f;
+        }
+
+        td {
+            padding: 17px 12px;
+            font-size: 12px;
+            color: #cbd5e1;
+            border-bottom: 1px solid #202b40;
+        }
+
+        tr:hover td {
+            background: #19243a;
+        }
+
+        .test-name {
+            color: #e2e8f0;
+            font-weight: 600;
+        }
+
+        .run-id {
+            color: #818cf8;
+            font-size: 11px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .status-passed {
+            color: #34d399;
+            background: #12352e;
+        }
+
+        .retry-badge {
+            background: #3a2919;
+            color: #fb923c;
+            padding: 6px 10px;
+            border-radius: 7px;
+            font-weight: 700;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 45px 15px;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .empty-icon {
+            font-size: 30px;
+            margin-bottom: 12px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #475569;
+            font-size: 10px;
+        }
+
+        .error-message {
+            color: #fb7185;
+            font-size: 12px;
+            margin-top: 15px;
+        }
+
+        @media(max-width: 950px) {
+            .sidebar {
+                width: 190px;
+            }
+
+            .main {
+                padding: 25px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media(max-width: 650px) {
+            .sidebar {
+                display: none;
+            }
+
+            .main {
+                padding: 20px 15px;
+            }
+
+            .stats-grid,
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page-title {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+    <aside class="sidebar">
+
+        <div class="brand">Test<span>Pilot</span></div>
+
+        <div class="brand-subtitle">
+            QUALITY INTELLIGENCE
+        </div>
+
+        <div class="nav-label">MONITORING</div>
+
+        <a href="/qa" class="nav-item">
+            ◈ QA Dashboard
+        </a>
+
+        <a href="/qa/flaky" class="nav-item active">
+            ◉ Flaky Test Analytics
+        </a>
+
+        <div class="sidebar-footer">
+            TESTPILOT FRAMEWORK<br>
+            Automated Quality Assurance<br>
+            <span style="color:#818cf8;">System Monitoring Active</span>
+        </div>
+
+    </aside>
+
+
+    <main class="main">
+
+        <header class="topbar">
+
+            <div>
+                <h1 class="page-title">
+                    Flaky Test Analytics
+                </h1>
+
+                <p class="page-subtitle">
+                    Monitor unstable tests, retry patterns and recovery history.
+                </p>
+            </div>
+
+            <div class="live-badge">
+                <span class="live-dot"></span>
+                API CONNECTED
+            </div>
+
+        </header>
+
+
+        <!-- OVERVIEW CARDS -->
+
+        <section class="stats-grid">
+
+            <div class="stat-card">
+                <div class="stat-label">TOTAL FLAKY TESTS</div>
+                <div class="stat-value purple" id="totalFlaky">--</div>
+                <div class="stat-description">
+                    Recorded unstable test cases
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">TOTAL RETRIES</div>
+                <div class="stat-value orange" id="totalRetries">--</div>
+                <div class="stat-description">
+                    Retry attempts across recorded tests
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">RECOVERED TESTS</div>
+                <div class="stat-value green" id="recoveredTests">--</div>
+                <div class="stat-description">
+                    Tests that eventually passed
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- RETRY ANALYTICS -->
+
+        <section class="panel">
+
+            <div class="panel-header">
+
+                <div>
+                    <h2 class="panel-title">Retry Analytics</h2>
+
+                    <p class="panel-description">
+                        Overview of flaky test recovery activity
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="analytics-grid">
+
+                <div class="analytics-box">
+
+                    <div class="analytics-heading">
+                        AVERAGE RETRIES PER FLAKY TEST
+                    </div>
+
+                    <div class="analytics-number" id="averageRetries">
+                        --
+                    </div>
+
+                    <div class="analytics-caption">
+                        Mean retry count
+                    </div>
+
+                </div>
+
+                <div class="analytics-box">
+
+                    <div class="analytics-heading">
+                        RECOVERY RATE
+                    </div>
+
+                    <div class="analytics-number green" id="recoveryRate">
+                        --
+                    </div>
+
+                    <div class="analytics-caption">
+                        Recorded flaky tests that eventually passed
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- HISTORY TABLE -->
+
+        <section class="panel">
+
+            <div class="panel-header">
+
+                <div>
+                    <h2 class="panel-title">
+                        Flaky Test History
+                    </h2>
+
+                    <p class="panel-description">
+                        Historical records from the TestPilot execution database
+                    </p>
+                </div>
+
+                <button class="refresh-btn" onclick="loadDashboard()">
+                    ↻ Refresh Data
+                </button>
+
+            </div>
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>Test Name</th>
+                            <th>Run ID</th>
+                            <th>Retry Count</th>
+                            <th>Final Status</th>
+                            <th>Detected At</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="flakyTable">
+
+                        <tr>
+                            <td colspan="5">
+                                <div class="empty-state">
+                                    Loading flaky test history...
+                                </div>
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <div id="errorMessage" class="error-message"></div>
+
+        </section>
+
+
+        <div class="footer">
+            TESTPILOT AUTOMATED QA FRAMEWORK · FLAKY TEST MONITORING
+        </div>
+
+    </main>
+
+</div>
+
+
+<script>
+
+async function loadDashboard() {
+
+    const errorElement = document.getElementById("errorMessage");
+
+    errorElement.textContent = "";
+
+    try {
+
+        const [statsResponse, historyResponse] = await Promise.all([
+
+            fetch("/api/qa/flaky/stats"),
+
+            fetch("/api/qa/flaky?limit=200")
+
+        ]);
+
+        if (!statsResponse.ok || !historyResponse.ok) {
+            throw new Error("Unable to retrieve dashboard data.");
+        }
+
+        const statsData = await statsResponse.json();
+
+        const historyData = await historyResponse.json();
+
+        if (!statsData.success || !historyData.success) {
+            throw new Error("Flaky test API returned an unsuccessful response.");
+        }
+
+        const stats = statsData.stats;
+
+        const tests = historyData.flaky_tests || [];
+
+        const totalFlaky = Number(stats.flaky_tests || 0);
+
+        const totalRetries = Number(stats.total_retries || 0);
+
+        const recovered = tests.filter(
+            test => test.final_status === "passed"
+        ).length;
+
+        const average = totalFlaky > 0
+            ? (totalRetries / totalFlaky).toFixed(2)
+            : "0.00";
+
+        const recovery = totalFlaky > 0
+            ? ((recovered / totalFlaky) * 100).toFixed(1) + "%"
+            : "0%";
+
+        document.getElementById("totalFlaky").textContent = totalFlaky;
+
+        document.getElementById("totalRetries").textContent = totalRetries;
+
+        document.getElementById("recoveredTests").textContent = recovered;
+
+        document.getElementById("averageRetries").textContent = average;
+
+        document.getElementById("recoveryRate").textContent = recovery;
+
+        renderTable(tests);
+
+    }
+    catch (error) {
+
+        errorElement.textContent = error.message;
+
+        document.getElementById("flakyTable").innerHTML = `
+            <tr>
+                <td colspan="5">
+                    <div class="empty-state">
+                        Unable to load flaky test history.
+                    </div>
+                </td>
+            </tr>
+        `;
+
+    }
+
+}
+
+
+function renderTable(tests) {
+
+    const table = document.getElementById("flakyTable");
+
+    if (!tests.length) {
+
+        table.innerHTML = `
+            <tr>
+                <td colspan="5">
+                    <div class="empty-state">
+                        <div class="empty-icon">✓</div>
+                        No flaky tests recorded yet.
+                    </div>
+                </td>
+            </tr>
+        `;
+
+        return;
+
+    }
+
+    table.innerHTML = tests.map(test => {
+
+        const name = escapeHTML(test.test_name || "Unknown test");
+
+        const runId = escapeHTML(test.run_id || "N/A");
+
+        const retries = Number(test.retry_count || 0);
+
+        const status = escapeHTML(test.final_status || "Unknown");
+
+        const detected = escapeHTML(test.detected_at || "N/A");
+
+        return `
+            <tr>
+
+                <td>
+                    <span class="test-name">${name}</span>
+                </td>
+
+                <td>
+                    <span class="run-id">${runId}</span>
+                </td>
+
+                <td>
+                    <span class="retry-badge">
+                        ${retries} retries
+                    </span>
+                </td>
+
+                <td>
+                    <span class="status status-passed">
+                        ${status.toUpperCase()}
+                    </span>
+                </td>
+
+                <td>${detected}</td>
+
+            </tr>
+        `;
+
+    }).join("");
+
+}
+
+
+function escapeHTML(value) {
+
+    return String(value).replace(/[&<>"']/g, character => {
+
+        const entities = {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+        };
+
+        return entities[character];
+
+    });
+
+}
+
+
+// Initial dashboard loading
+loadDashboard();
+
+
+// Automatically refresh every 30 seconds
+setInterval(loadDashboard, 30000);
+
+</script>
+
+</body>
+</html>

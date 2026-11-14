@@ -11,6 +11,7 @@ from application.database.db import initialize_database
 
 from application.routes.auth import auth_bp
 from application.routes.qa import qa_bp
+from application.routes.flasky import flaky_bp
 
 
 app = Flask(__name__)
@@ -21,6 +22,7 @@ initialize_database()
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(qa_bp)
+app.register_blueprint(flaky_bp)
 
 
 @app.route("/")
