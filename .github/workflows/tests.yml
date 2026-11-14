@@ -39,50 +39,98 @@ jobs:
           New-Item -ItemType Directory -Force reports
           New-Item -ItemType Directory -Force screenshots
 
-      - name: Start TestPilot Application
+      - name: Start Application and Execute Tests
         shell: pwsh
-        run: |
-          $process = Start-Process `
-            -FilePath python `
-            -ArgumentList "-m flask --app application.app run --host 127.0.0.1 --port 5000" `
-            -PassThru `
-            -RedirectStandardOutput flask.log `
-            -RedirectStandardError flask-error.log
-
-          $healthy = $false
-
-          for ($i = 0; $i -lt 30; $i++) {
-            try {
-              $response = Invoke-WebRequest `
-                -Uri "http://127.0.0.1:5000/health" `
-                -TimeoutSec 3
-
-              if ($response.StatusCode -eq 200) {
-                $healthy = $true
-                break
-              }
-            }
-            catch {
-              Start-Sleep -Seconds 2
-            }
-          }
-
-          if (-not $healthy) {
-            Get-Content flask-error.log -ErrorAction SilentlyContinue
-            throw "TestPilot application failed to start."
-          }
-
-          Write-Host "TestPilot application is healthy."
-
-      - name: Execute Automated Tests
         env:
           CI: "true"
           TESTPILOT_BASE_URL: "http://127.0.0.1:5000"
+
         run: |
-          pytest tests -n 2 `
-            --html=reports/report.html `
-            --self-contained-html `
-            --alluredir=reports/allure-results
+
+          $process = $null
+          $testExitCode = 1
+
+          try {
+
+            Write-Host "Starting TestPilot application..."
+
+            $process = Start-Process `
+              -FilePath python `
+              -ArgumentList @(
+                "-m",
+                "flask",
+                "--app",
+                "application.app",
+                "run",
+                "--host",
+                "127.0.0.1",
+                "--port",
+                "5000",
+                "--no-reload"
+              ) `
+              -PassThru `
+              -RedirectStandardOutput flask.log `
+              -RedirectStandardError flask-error.log
+
+            $healthy = $false
+
+            for ($i = 0; $i -lt 30; $i++) {
+
+              try {
+
+                $response = Invoke-WebRequest `
+                  -Uri "http://127.0.0.1:5000/health" `
+                  -TimeoutSec 3
+
+                if ($response.StatusCode -eq 200) {
+
+                  $healthy = $true
+                  break
+
+                }
+
+              }
+              catch {
+
+                Start-Sleep -Seconds 2
+
+              }
+
+            }
+
+            if (-not $healthy) {
+
+              Get-Content flask-error.log -ErrorAction SilentlyContinue
+
+              throw "TestPilot application failed to start."
+
+            }
+
+            Write-Host "TestPilot application is healthy."
+
+            Write-Host "Executing automated test suite..."
+
+            pytest tests -n 2 `
+              --html=reports/report.html `
+              --self-contained-html `
+              --alluredir=reports/allure-results
+
+            $testExitCode = $LASTEXITCODE
+
+          }
+          finally {
+
+            if ($null -ne $process) {
+
+              Write-Host "Stopping TestPilot application..."
+
+              Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+
+            }
+
+          }
+
+          exit $testExitCode
 
       - name: Upload Test Reports
         if: always()
