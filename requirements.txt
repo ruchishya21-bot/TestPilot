@@ -7,3 +7,4 @@ pytest-html
 allure-pytest
 python-dotenv
 flask
+pytest-rerunfailures

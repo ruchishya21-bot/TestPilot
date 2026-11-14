@@ -12,10 +12,12 @@ from application.app import app
 from application.database import db
 
 from utilities import result_store
+from utilities import flaky_tracker
 
 
 _current_run_id = None
 _run_start_time = None
+_retry_counts = {}
 
 
 def pytest_sessionstart(session):
@@ -26,6 +28,7 @@ def pytest_sessionstart(session):
         return
 
     result_store.initialize_results_database()
+    flaky_tracker.initialize_flaky_database()
 
     _run_start_time = time.perf_counter()
     _current_run_id = result_store.start_test_run()
@@ -59,6 +62,13 @@ def pytest_runtest_logreport(report):
     if _current_run_id is None:
         return
 
+    # Detect a test attempt that will be retried.
+    if report.outcome == "rerun":
+        _retry_counts[report.nodeid] = (
+            _retry_counts.get(report.nodeid, 0) + 1
+        )
+        return
+
     if report.when == "call":
 
         result_store.record_test_result(
@@ -70,6 +80,24 @@ def pytest_runtest_logreport(report):
                 report.longreprtext if report.failed else None
             )
         )
+
+        retry_count = _retry_counts.get(report.nodeid, 0)
+
+        # A test that passed after one or more retries is flaky.
+        if report.passed and retry_count > 0:
+
+            flaky_tracker.record_flaky_test(
+                run_id=_current_run_id,
+                node_id=report.nodeid,
+                retry_count=retry_count
+            )
+
+            print(
+                f"\nFLAKY TEST DETECTED: {report.nodeid} "
+                f"({retry_count} retries)"
+            )
+
+        _retry_counts.pop(report.nodeid, None)
 
     elif report.when == "setup" and (
         report.failed or report.skipped

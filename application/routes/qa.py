@@ -7,6 +7,12 @@ from utilities.result_store import (
     compare_test_runs
 )
 
+from utilities.flaky_tracker import (
+    initialize_flaky_database,
+    get_flaky_test_history,
+    get_flaky_test_stats
+)
+
 from utilities.execution_manager import (
     start_execution,
     get_execution_status,
@@ -423,5 +429,79 @@ def get_test_runs():
             "success": False,
 
             "message": f"Unable to retrieve test runs: {error}"
+
+        }), 500
+
+
+# --------------------------------------------------
+# FLAKY TEST HISTORY API
+# --------------------------------------------------
+
+@qa_bp.route("/api/qa/flaky", methods=["GET"])
+def qa_flaky_tests():
+
+    try:
+
+        initialize_flaky_database()
+
+        limit = request.args.get(
+            "limit",
+            default=50,
+            type=int
+        )
+
+        limit = max(1, min(limit, 200))
+
+        flaky_tests = get_flaky_test_history(limit=limit)
+
+        return jsonify({
+
+            "success": True,
+
+            "total_flaky_tests": len(flaky_tests),
+
+            "flaky_tests": flaky_tests
+
+        }), 200
+
+    except Exception as error:
+
+        return jsonify({
+
+            "success": False,
+
+            "message": f"Unable to retrieve flaky tests: {error}"
+
+        }), 500
+
+
+# --------------------------------------------------
+# FLAKY TEST STATISTICS API
+# --------------------------------------------------
+
+@qa_bp.route("/api/qa/flaky/stats", methods=["GET"])
+def qa_flaky_stats():
+
+    try:
+
+        initialize_flaky_database()
+
+        stats = get_flaky_test_stats()
+
+        return jsonify({
+
+            "success": True,
+
+            "stats": stats
+
+        }), 200
+
+    except Exception as error:
+
+        return jsonify({
+
+            "success": False,
+
+            "message": f"Unable to retrieve flaky test statistics: {error}"
 
         }), 500
