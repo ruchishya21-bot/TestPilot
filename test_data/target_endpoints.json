@@ -1,0 +1,17 @@
+[
+    {
+        "name": "Application Health",
+        "endpoint": "/health",
+        "expected_status": 200
+    },
+    {
+        "name": "Login Page",
+        "endpoint": "/login",
+        "expected_status": 200
+    },
+    {
+        "name": "Registration Page",
+        "endpoint": "/register",
+        "expected_status": 200
+    }
+]

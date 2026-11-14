@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | TestPilot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<nav class="navbar">
+    <a href="/dashboard" class="brand">
+        <span class="brand-icon">T</span>
+        TestPilot
+    </a>
+
+    <div class="nav-links">
+        <span class="welcome-user">Welcome, {{ username }}</span>
+        <button id="logoutButton" class="nav-button">Logout</button>
+    </div>
+</nav>
+
+<main class="dashboard-container">
+
+    <div class="dashboard-heading">
+        <div>
+            <span class="eyebrow">YOUR WORKSPACE</span>
+            <h1>Welcome back, {{ username }}.</h1>
+            <p>Your TestPilot account is ready.</p>
+        </div>
+
+        <span class="account-badge">● Account Active</span>
+    </div>
+
+    <section class="dashboard-grid">
+
+        <div class="dashboard-card">
+            <span class="card-label">ACCOUNT</span>
+            <h2>Active</h2>
+            <p>Your account is successfully authenticated.</p>
+        </div>
+
+        <div class="dashboard-card">
+            <span class="card-label">AUTHENTICATION</span>
+            <h2>Verified</h2>
+            <p>Your login session is active.</p>
+        </div>
+
+        <div class="dashboard-card">
+            <span class="card-label">PLATFORM</span>
+            <h2>TestPilot</h2>
+            <p>Automated software quality testing portal.</p>
+        </div>
+
+    </section>
+
+    <section class="activity-card">
+        <span class="eyebrow">ACCOUNT OVERVIEW</span>
+        <h2>You're all set.</h2>
+        <p>
+            You have successfully entered the TestPilot demo application.
+            This dashboard will be used for Selenium browser automation
+            and end-to-end workflow testing.
+        </p>
+    </section>
+
+</main>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TestPilot | Run Comparison</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #0b0b16;
+            color: #f1f0ff;
+            min-height: 100vh;
+            padding: 35px;
+        }
+
+        .container {
+            max-width: 1250px;
+            margin: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 35px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .brand {
+            font-size: 25px;
+            font-weight: 750;
+            color: #b69aff;
+        }
+
+        .back {
+            color: #c4adff;
+            text-decoration: none;
+            border: 1px solid #493675;
+            padding: 10px 18px;
+            border-radius: 9px;
+        }
+
+        .back:hover {
+            background: #281d43;
+        }
+
+        .heading {
+            margin-bottom: 30px;
+        }
+
+        .heading h1 {
+            font-size: 34px;
+            margin-bottom: 10px;
+        }
+
+        .heading p {
+            color: #9995b2;
+            line-height: 1.6;
+        }
+
+        .panel {
+            background: #151426;
+            border: 1px solid #292541;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .panel h2 {
+            font-size: 19px;
+            margin-bottom: 20px;
+        }
+
+        .selectors {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        label {
+            display: block;
+            color: #aaa5c5;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+
+        select {
+            width: 100%;
+            padding: 14px;
+            background: #0e0d1b;
+            border: 1px solid #393252;
+            border-radius: 9px;
+            color: white;
+            outline: none;
+        }
+
+        select:focus {
+            border-color: #a78bfa;
+        }
+
+        button {
+            margin-top: 22px;
+            background: linear-gradient(135deg, #8055e9, #a66cf4);
+            border: none;
+            padding: 13px 25px;
+            border-radius: 9px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.88;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #message {
+            margin-top: 15px;
+            color: #b9a5ff;
+            font-size: 14px;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 17px;
+            margin-bottom: 25px;
+        }
+
+        .metric {
+            background: #151426;
+            border: 1px solid #292541;
+            border-radius: 14px;
+            padding: 22px;
+        }
+
+        .metric span {
+            color: #aaa5c5;
+            font-size: 13px;
+        }
+
+        .metric h2 {
+            font-size: 27px;
+            margin-top: 12px;
+        }
+
+        .positive {
+            color: #4ade80;
+        }
+
+        .negative {
+            color: #fb7185;
+        }
+
+        .neutral {
+            color: #c4b5fd;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .run-card {
+            background: #151426;
+            border: 1px solid #292541;
+            border-radius: 14px;
+            padding: 23px;
+        }
+
+        .run-card h3 {
+            color: #bda6ff;
+            margin-bottom: 17px;
+        }
+
+        .run-card p {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #292541;
+            color: #aaa5c5;
+            font-size: 14px;
+        }
+
+        .run-card strong {
+            color: white;
+        }
+
+        .changes {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 17px;
+        }
+
+        .change-card {
+            background: #151426;
+            border: 1px solid #292541;
+            border-radius: 13px;
+            padding: 22px;
+        }
+
+        .change-card h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .change-card p {
+            color: #aaa5c5;
+            font-size: 14px;
+            padding: 7px 0;
+            overflow-wrap: anywhere;
+        }
+
+        .empty {
+            color: #77738f;
+            font-size: 14px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .section-title {
+            margin-bottom: 17px;
+            font-size: 21px;
+        }
+
+        @media(max-width: 850px) {
+            .metrics {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media(max-width: 600px) {
+            body {
+                padding: 18px;
+            }
+
+            .selectors,
+            .comparison-grid,
+            .changes,
+            .metrics {
+                grid-template-columns: 1fr;
+            }
+
+            .heading h1 {
+                font-size: 27px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <header class="header">
+        <div class="brand">◈ TestPilot</div>
+        <a href="/qa" class="back">← Back to Dashboard</a>
+    </header>
+
+    <section class="heading">
+        <h1>Test Run Comparison</h1>
+        <p>
+            Compare historical test executions, identify regressions,
+            track improvements and analyze execution performance.
+        </p>
+    </section>
+
+    <section class="panel">
+
+        <h2>Select Test Executions</h2>
+
+        <div class="selectors">
+
+            <div>
+                <label for="baseline">Baseline Run</label>
+                <select id="baseline">
+                    <option value="">Loading historical runs...</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="comparison">Comparison Run</label>
+                <select id="comparison">
+                    <option value="">Loading historical runs...</option>
+                </select>
+            </div>
+
+        </div>
+
+        <button id="compareButton" onclick="compareRuns()">
+            Compare Executions
+        </button>
+
+        <div id="message"></div>
+
+    </section>
+
+    <section id="results" class="hidden">
+
+        <h2 class="section-title">Comparison Overview</h2>
+
+        <div class="metrics">
+
+            <div class="metric">
+                <span>Pass Rate Change</span>
+                <h2 id="passChange" class="neutral">--</h2>
+            </div>
+
+            <div class="metric">
+                <span>Execution Time Change</span>
+                <h2 id="durationChange" class="neutral">--</h2>
+            </div>
+
+            <div class="metric">
+                <span>Test Count Change</span>
+                <h2 id="testChange" class="neutral">--</h2>
+            </div>
+
+            <div class="metric">
+                <span>Newly Failed Tests</span>
+                <h2 id="newFailures" class="negative">--</h2>
+            </div>
+
+        </div>
+
+        <h2 class="section-title">Execution Details</h2>
+
+        <div class="comparison-grid">
+
+            <div class="run-card">
+                <h3>Baseline Execution</h3>
+                <div id="baselineDetails"></div>
+            </div>
+
+            <div class="run-card">
+                <h3>Comparison Execution</h3>
+                <div id="comparisonDetails"></div>
+            </div>
+
+        </div>
+
+        <h2 class="section-title" style="margin-top:30px;">
+            Test Changes Analysis
+        </h2>
+
+        <div class="changes">
+
+            <div class="change-card">
+                <h3 class="negative">Newly Failed Tests</h3>
+                <div id="newlyFailed"></div>
+            </div>
+
+            <div class="change-card">
+                <h3 class="positive">Fixed Tests</h3>
+                <div id="fixedTests"></div>
+            </div>
+
+            <div class="change-card">
+                <h3 class="neutral">New Tests</h3>
+                <div id="newTests"></div>
+            </div>
+
+            <div class="change-card">
+                <h3 class="neutral">Removed Tests</h3>
+                <div id="removedTests"></div>
+            </div>
+
+            <div class="change-card">
+                <h3 class="negative">Unchanged Failures</h3>
+                <div id="unchangedFailures"></div>
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+<script>
+
+const baselineSelect = document.getElementById("baseline");
+const comparisonSelect = document.getElementById("comparison");
+const compareButton = document.getElementById("compareButton");
+const message = document.getElementById("message");
+
+
+async function loadRuns() {
+
+    try {
+
+        const response = await fetch("/api/qa/runs");
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(data.message || "Unable to load test runs.");
+        }
+
+        baselineSelect.innerHTML = "";
+        comparisonSelect.innerHTML = "";
+
+        if (data.runs.length < 2) {
+
+            baselineSelect.innerHTML =
+                '<option value="">Not enough runs</option>';
+
+            comparisonSelect.innerHTML =
+                '<option value="">Not enough runs</option>';
+
+            message.textContent =
+                "At least two historical test runs are required.";
+
+            compareButton.disabled = true;
+
+            return;
+        }
+
+        data.runs.forEach((run, index) => {
+
+            const date = new Date(run.started_at).toLocaleString();
+
+            const label =
+                `${date} | ${run.passed}/${run.total} Passed | ${run.status}`;
+
+            const option1 = new Option(label, run.id);
+            const option2 = new Option(label, run.id);
+
+            baselineSelect.add(option1);
+            comparisonSelect.add(option2);
+
+        });
+
+        baselineSelect.selectedIndex = 2 < data.runs.length ? 2 : 0;
+        comparisonSelect.selectedIndex = 0;
+
+        message.textContent =
+            `${data.runs.length} historical executions loaded successfully.`;
+
+    } catch (error) {
+
+        message.textContent = error.message;
+        compareButton.disabled = true;
+
+    }
+
+}
+
+
+function renderRunDetails(elementId, run) {
+
+    const element = document.getElementById(elementId);
+
+    element.innerHTML = `
+
+        <p><span>Started</span><strong>${run.started_at}</strong></p>
+
+        <p><span>Status</span><strong>${run.status.toUpperCase()}</strong></p>
+
+        <p><span>Total Tests</span><strong>${run.total}</strong></p>
+
+        <p><span>Passed</span><strong>${run.passed}</strong></p>
+
+        <p><span>Failed</span><strong>${run.failed}</strong></p>
+
+        <p><span>Skipped</span><strong>${run.skipped}</strong></p>
+
+        <p><span>Errors</span><strong>${run.errors}</strong></p>
+
+        <p><span>Duration</span><strong>${Number(run.duration).toFixed(2)} sec</strong></p>
+
+    `;
+
+}
+
+
+function renderChanges(elementId, tests) {
+
+    const element = document.getElementById(elementId);
+
+    if (!tests || tests.length === 0) {
+
+        element.innerHTML =
+            '<p class="empty">No changes detected.</p>';
+
+        return;
+    }
+
+    element.innerHTML = tests.map(test => `
+
+        <p>
+            ${escapeHTML(test.test_name)}
+            <br>
+            <small>${escapeHTML(test.category)}</small>
+        </p>
+
+    `).join("");
+
+}
+
+
+function escapeHTML(value) {
+
+    return String(value ?? "").replace(/[&<>"']/g, character => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[character]);
+
+}
+
+
+function formatChange(value, suffix = "") {
+
+    const number = Number(value);
+
+    const sign = number > 0 ? "+" : "";
+
+    return sign + number.toFixed(2) + suffix;
+
+}
+
+
+async function compareRuns() {
+
+    const baseline = baselineSelect.value;
+    const comparison = comparisonSelect.value;
+
+    if (!baseline || !comparison) {
+
+        message.textContent = "Please select two test executions.";
+
+        return;
+    }
+
+    if (baseline === comparison) {
+
+        message.textContent =
+            "Please select two different test executions.";
+
+        return;
+    }
+
+    compareButton.disabled = true;
+    compareButton.textContent = "Comparing...";
+
+    message.textContent = "Analyzing test execution differences...";
+
+    try {
+
+        const response = await fetch(
+            `/api/qa/compare?baseline=${encodeURIComponent(baseline)}&comparison=${encodeURIComponent(comparison)}`
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+
+            throw new Error(data.message || "Comparison failed.");
+
+        }
+
+        const result = data.comparison;
+        const metrics = result.metrics;
+        const changes = result.changes;
+
+        document.getElementById("results").classList.remove("hidden");
+
+        const passElement = document.getElementById("passChange");
+
+        passElement.textContent =
+            formatChange(metrics.pass_rate_change, "%");
+
+        passElement.className =
+            metrics.pass_rate_change > 0 ? "positive" :
+            metrics.pass_rate_change < 0 ? "negative" : "neutral";
+
+
+        const durationElement =
+            document.getElementById("durationChange");
+
+        durationElement.textContent =
+            formatChange(metrics.duration_change, " sec");
+
+        durationElement.className =
+            metrics.duration_change < 0 ? "positive" :
+            metrics.duration_change > 0 ? "negative" : "neutral";
+
+
+        const testElement =
+            document.getElementById("testChange");
+
+        testElement.textContent =
+            formatChange(metrics.test_count_change);
+
+        testElement.className = "neutral";
+
+
+        document.getElementById("newFailures").textContent =
+            changes.newly_failed.length;
+
+
+        renderRunDetails("baselineDetails", result.baseline);
+
+        renderRunDetails("comparisonDetails", result.comparison);
+
+        renderChanges("newlyFailed", changes.newly_failed);
+
+        renderChanges("fixedTests", changes.fixed_tests);
+
+        renderChanges("newTests", changes.new_tests);
+
+        renderChanges("removedTests", changes.removed_tests);
+
+        renderChanges(
+            "unchangedFailures",
+            changes.unchanged_failures
+        );
+
+        message.textContent = "Comparison completed successfully.";
+
+    } catch (error) {
+
+        message.textContent = error.message;
+
+    } finally {
+
+        compareButton.disabled = false;
+        compareButton.textContent = "Compare Executions";
+
+    }
+
+}
+
+
+loadRuns();
+
+</script>
+
+</body>
+</html>

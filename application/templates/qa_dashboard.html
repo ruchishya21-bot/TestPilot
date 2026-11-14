@@ -1,0 +1,2262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TestPilot | QA Execution Dashboard</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+        :root {
+            --bg: #0b0d12;
+            --panel: #12151d;
+            --panel-light: #171b25;
+            --border: #252a37;
+            --text: #f0f2f8;
+            --muted: #858da0;
+            --accent: #8b7cff;
+            --green: #35d39a;
+            --red: #ff647c;
+            --yellow: #f4bd62;
+            --blue: #60a5fa;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 245px;
+            background: #0e1118;
+            border-right: 1px solid var(--border);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 48px;
+        }
+
+        .brand-icon {
+            width: 39px;
+            height: 39px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #9b8cff, #6653df);
+            display: grid;
+            place-items: center;
+            font-size: 21px;
+            font-weight: 700;
+            color: white;
+            box-shadow: 0 5px 20px #7562e844;
+        }
+
+        .brand-name {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 21px;
+            font-weight: 700;
+            letter-spacing: -0.8px;
+        }
+
+        .brand-name span {
+            color: var(--accent);
+        }
+
+        .nav-label {
+            font-size: 10px;
+            letter-spacing: 1.6px;
+            color: #626b7d;
+            font-weight: 700;
+            margin: 0 0 14px 10px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            padding: 13px 12px;
+            border-radius: 9px;
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 6px;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .nav-item.active {
+            background: #8b7cff1c;
+            color: #b7adff;
+            border: 1px solid #8b7cff30;
+        }
+
+        .nav-item:hover {
+            background: var(--panel-light);
+            color: white;
+        }
+
+        .nav-icon {
+            font-size: 17px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-bottom {
+            margin-top: auto;
+            padding: 15px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--panel);
+        }
+
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--green);
+            border-radius: 50%;
+            box-shadow: 0 0 10px #35d39a88;
+        }
+
+        .system-caption {
+            color: var(--muted);
+            font-size: 10px;
+            margin-top: 8px;
+        }
+
+        .main {
+            flex: 1;
+            min-width: 0;
+            padding: 35px 42px;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 38px;
+            gap: 20px;
+        }
+
+        .breadcrumb {
+            color: var(--muted);
+            font-size: 12px;
+            margin-bottom: 9px;
+        }
+
+        .breadcrumb span {
+            color: var(--accent);
+        }
+
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 29px;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            font-size: 13px;
+            margin-top: 7px;
+        }
+
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .live-badge {
+            padding: 9px 13px;
+            border: 1px solid #35d39a38;
+            background: #35d39a0c;
+            color: var(--green);
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .refresh-btn {
+            background: var(--panel-light);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .refresh-btn:hover {
+            border-color: var(--accent);
+        }
+
+        .section-heading {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 17px;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            padding: 21px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 13px;
+            transition: 0.2s;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            border-color: #514a80;
+        }
+
+        .metric-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .metric-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            display: grid;
+            place-items: center;
+            font-size: 16px;
+        }
+
+        .purple { background: #8b7cff20; color: #a99dff; }
+        .green { background: #35d39a18; color: var(--green); }
+        .red { background: #ff647c18; color: var(--red); }
+        .blue { background: #60a5fa18; color: var(--blue); }
+
+        .metric-value {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 31px;
+            font-weight: 700;
+            margin-top: 17px;
+        }
+
+        .metric-note {
+            color: var(--muted);
+            font-size: 11px;
+            margin-top: 5px;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.65fr) minmax(280px, 1fr);
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 13px;
+            padding: 22px;
+            min-width: 0;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 22px;
+        }
+
+        .panel-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .panel-caption {
+            color: var(--muted);
+            font-size: 11px;
+            margin-top: 5px;
+        }
+
+        .run-status {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 6px 10px;
+            border-radius: 6px;
+            text-transform: uppercase;
+        }
+
+        .run-status.passed,
+        .run-status.completed {
+            color: var(--green);
+            background: #35d39a18;
+        }
+
+        .run-status.failed,
+        .run-status.interrupted {
+            color: var(--red);
+            background: #ff647c18;
+        }
+
+        .run-status.running {
+            color: var(--blue);
+            background: #60a5fa18;
+        }
+
+        .run-status.idle {
+            color: var(--muted);
+            background: #858da018;
+        }
+
+        .empty-state {
+            padding: 30px 0;
+            text-align: center;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .run-overview {
+            display: grid;
+            grid-template-columns: 155px 1fr;
+            align-items: center;
+            gap: 27px;
+        }
+
+        .pass-ring {
+            width: 145px;
+            height: 145px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: conic-gradient(
+                var(--green) 0%,
+                var(--green) var(--pass-rate),
+                #272c38 var(--pass-rate),
+                #272c38 100%
+            );
+            position: relative;
+            margin: auto;
+        }
+
+        .pass-ring::before {
+            content: "";
+            position: absolute;
+            inset: 10px;
+            border-radius: 50%;
+            background: var(--panel);
+        }
+
+        .ring-content {
+            position: relative;
+            text-align: center;
+        }
+
+        .ring-value {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 27px;
+            font-weight: 700;
+        }
+
+        .ring-label {
+            color: var(--muted);
+            font-size: 10px;
+            margin-top: 2px;
+        }
+
+        .result-rows {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .result-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+        }
+
+        .result-label {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            color: var(--muted);
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .result-number {
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .category-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .category-top {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 9px;
+        }
+
+        .category-name {
+            color: #c4c9d5;
+        }
+
+        .category-count {
+            color: var(--muted);
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 6px;
+            border-radius: 10px;
+            background: #252a36;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            width: var(--progress-width, 0%);
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #6653df, #a99dff);
+            transition: width 0.4s;
+        }
+
+        /* EXECUTION CONTROL PANEL */
+
+        .execution-panel {
+            margin-bottom: 25px;
+            border-color: #514a8055;
+            background:
+                radial-gradient(ellipse at top right, #8b7cff12, transparent 55%),
+                var(--panel);
+        }
+
+        .execution-description {
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.7;
+            margin-bottom: 22px;
+        }
+
+        .execution-controls {
+            display: flex;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+
+        .suite-field {
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+            min-width: 220px;
+        }
+
+        .suite-field label {
+            font-size: 11px;
+            color: #b8bfd0;
+            font-weight: 600;
+        }
+
+        .suite-select {
+            background: #0c0f16;
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 12px 14px;
+            border-radius: 8px;
+            min-width: 220px;
+            font-family: inherit;
+            font-size: 12px;
+            outline: none;
+        }
+
+        .suite-select:focus {
+            border-color: var(--accent);
+        }
+
+        .run-button {
+            padding: 12px 22px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #927fff, #6653df);
+            color: white;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 5px 18px #6653df35;
+        }
+
+        .run-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px #6653df55;
+        }
+
+        .run-button:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .execution-message {
+            margin-top: 17px;
+            font-size: 12px;
+            min-height: 18px;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .execution-message.success {
+            color: var(--green);
+        }
+
+        .execution-message.error {
+            color: var(--red);
+        }
+
+        .execution-info {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 23px;
+        }
+
+        .info-box {
+            background: #0c0f16;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            padding: 14px;
+        }
+
+        .info-label {
+            color: var(--muted);
+            font-size: 10px;
+            margin-bottom: 8px;
+        }
+
+        .info-value {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            overflow-wrap: anywhere;
+        }
+
+        .console-panel {
+            margin-top: 20px;
+            background: #090c12;
+            border: 1px solid #272d3b;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .console-header {
+            padding: 12px 15px;
+            background: #111621;
+            border-bottom: 1px solid #272d3b;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .console-title {
+            color: #c9cfdd;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .console-indicator {
+            color: var(--green);
+            font-size: 10px;
+        }
+
+        .console-output {
+            padding: 16px;
+            height: 230px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            color: #a8b3c7;
+            font-family: Consolas, monospace;
+            font-size: 11px;
+            line-height: 1.7;
+        }
+
+        .history-panel {
+            margin-bottom: 25px;
+        }
+
+        .history-table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 650px;
+        }
+
+        th {
+            text-align: left;
+            color: #717b8e;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            padding: 13px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 16px 12px;
+            font-size: 12px;
+            color: #c5cad5;
+            border-bottom: 1px solid #252a374d;
+        }
+
+        tbody tr:hover {
+            background: #ffffff05;
+        }
+
+        .run-id {
+            color: #a99dff;
+            font-family: monospace;
+            font-size: 11px;
+        }
+
+        .view-link {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .view-link:hover {
+            color: #b8afff;
+        }
+
+        .test-name {
+            color: #e4e7ef;
+            font-weight: 500;
+        }
+
+        .category-tag {
+            background: #8b7cff16;
+            color: #b1a8ff;
+            padding: 5px 8px;
+            border-radius: 5px;
+            font-size: 10px;
+        }
+
+        .test-status {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .test-status.passed { color: var(--green); }
+        .test-status.failed,
+        .test-status.error { color: var(--red); }
+        .test-status.skipped { color: var(--yellow); }
+
+        .failure-details {
+            margin-top: 7px;
+            color: var(--red);
+            font-size: 10px;
+            max-width: 350px;
+            white-space: normal;
+            overflow-wrap: anywhere;
+        }
+
+        footer {
+            padding: 20px 0 5px;
+            color: #60697a;
+            font-size: 10px;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        @media (max-width: 1100px) {
+            .main { padding: 28px 24px; }
+            .metrics { grid-template-columns: repeat(2, 1fr); }
+            .content-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 720px) {
+            .sidebar { display: none; }
+            .main { padding: 23px 15px; }
+            .topbar { align-items: flex-start; flex-direction: column; }
+            h1 { font-size: 24px; }
+            .metrics { gap: 10px; }
+            .metric-card { padding: 15px; }
+            .metric-value { font-size: 25px; }
+            .run-overview { grid-template-columns: 1fr; }
+            .pass-ring { margin-bottom: 8px; }
+            .execution-info { grid-template-columns: 1fr; }
+            .execution-controls { align-items: stretch; flex-direction: column; }
+            .suite-select { width: 100%; }
+            .run-button { width: 100%; }
+            footer { flex-direction: column; }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+    <aside class="sidebar">
+
+        <div class="brand">
+            <div class="brand-icon">T</div>
+            <div class="brand-name">Test<span>Pilot</span></div>
+        </div>
+
+        <div class="nav-label">WORKSPACE</div>
+
+        <a href="/qa" class="nav-item active">
+            <span class="nav-icon">▦</span>
+            QA Overview
+        </a>
+
+        <a href="#execution" class="nav-item">
+            <span class="nav-icon">▶</span>
+            Run Tests
+        </a>
+
+        <a href="#history" class="nav-item">
+            <span class="nav-icon">◷</span>
+            Test History
+        </a>
+
+        <a href="#results" class="nav-item">
+            <span class="nav-icon">✓</span>
+            Test Results
+        </a>
+
+        <div class="sidebar-bottom">
+            <div class="system-status">
+                <span class="status-dot"></span>
+                Execution Engine
+            </div>
+
+            <div class="system-caption">
+                TestPilot reporting system
+            </div>
+        </div>
+
+    </aside>
+
+    <main class="main">
+
+        <header class="topbar">
+
+            <div>
+                <div class="breadcrumb">
+                    WORKSPACE / <span>QA OVERVIEW</span>
+                </div>
+
+                <h1>QA Execution Dashboard</h1>
+
+                <p class="subtitle">
+                    Monitor automated tests, execution quality and regression results.
+                </p>
+            </div>
+
+            <div class="top-actions">
+                <div class="live-badge">
+                    ● REPORTING ACTIVE
+                </div>
+
+                <button
+                    class="refresh-btn"
+                    onclick="window.location.reload()"
+                >
+                    ↻ Refresh
+                </button>
+            </div>
+
+        </header>
+
+        <div class="section-heading">
+            Execution Overview
+        </div>
+
+        <section class="metrics">
+
+            <div class="metric-card">
+                <div class="metric-top">
+                    Total Tests
+                    <span class="metric-icon purple">▦</span>
+                </div>
+
+                <div class="metric-value">
+                    {{ selected_run.total if selected_run else 0 }}
+                </div>
+
+                <div class="metric-note">
+                    Tests in selected execution
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-top">
+                    Passed Tests
+                    <span class="metric-icon green">✓</span>
+                </div>
+
+                <div class="metric-value">
+                    {{ selected_run.passed if selected_run else 0 }}
+                </div>
+
+                <div class="metric-note">
+                    Successfully completed
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-top">
+                    Failed Tests
+                    <span class="metric-icon red">✕</span>
+                </div>
+
+                <div class="metric-value">
+                    {{ selected_run.failed if selected_run else 0 }}
+                </div>
+
+                <div class="metric-note">
+                    Tests requiring attention
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-top">
+                    Pass Rate
+                    <span class="metric-icon blue">%</span>
+                </div>
+
+                <div class="metric-value">
+                    {{ pass_rate }}%
+                </div>
+
+                <div class="metric-note">
+                    Based on selected execution
+                </div>
+            </div>
+
+        </section>
+
+        <!-- TEST EXECUTION CONTROL PANEL -->
+
+        <section class="panel execution-panel" id="execution">
+
+            <div class="panel-header">
+
+                <div>
+                    <div class="panel-title">
+                        Test Execution Center
+                    </div>
+
+                    <div class="panel-caption">
+                        Execute automated test suites directly from TestPilot
+                    </div>
+                </div>
+
+                <span class="run-status idle" id="executionStatus">
+                    IDLE
+                </span>
+
+            </div>
+
+            <p class="execution-description">
+                Select a test suite and launch a Pytest execution.
+                Monitor the execution status and inspect console output below.
+            </p>
+
+            <div class="execution-controls">
+
+                <div class="suite-field">
+
+                    <label for="testSuite">
+                        SELECT TEST SUITE
+                    </label>
+
+                    <select class="suite-select" id="testSuite">
+
+                        {% for suite_id, suite in test_suites.items() %}
+
+                            <option value="{{ suite_id }}">
+                                {{ suite.label }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+                <button
+                    class="run-button"
+                    id="runTestsButton"
+                    onclick="startTests()"
+                >
+                    ▶ Run Tests
+                </button>
+
+            </div>
+
+            <div
+                class="execution-message"
+                id="executionMessage"
+                aria-live="polite"
+            >
+                Ready to execute tests.
+            </div>
+
+            <div class="execution-info">
+
+                <div class="info-box">
+
+                    <div class="info-label">
+                        CURRENT SUITE
+                    </div>
+
+                    <div class="info-value" id="currentSuite">
+                        Not selected
+                    </div>
+
+                </div>
+
+                <div class="info-box">
+
+                    <div class="info-label">
+                        STARTED AT
+                    </div>
+
+                    <div class="info-value" id="startedAt">
+                        —
+                    </div>
+
+                </div>
+
+                <div class="info-box">
+
+                    <div class="info-label">
+                        PROCESS ID
+                    </div>
+
+                    <div class="info-value" id="processId">
+                        —
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="console-panel">
+
+                <div class="console-header">
+
+                    <span class="console-title">
+                        TERMINAL OUTPUT
+                    </span>
+
+                    <span class="console-indicator" id="consoleIndicator">
+                        ● READY
+                    </span>
+
+                </div>
+
+                <pre class="console-output" id="executionLogs">TestPilot execution console
+Waiting for test execution...
+
+Select a suite and click Run Tests to begin.</pre>
+
+            </div>
+
+        </section>
+
+        <div class="section-heading">
+            Execution Analytics
+        </div>
+
+        <section class="content-grid">
+
+            <div class="panel">
+
+                <div class="panel-header">
+
+                    <div>
+                        <div class="panel-title">
+                            Latest Execution Summary
+                        </div>
+
+                        <div class="panel-caption">
+                            Result distribution for selected test run
+                        </div>
+                    </div>
+
+                    {% if selected_run %}
+                        <span class="run-status {{ selected_run.status }}">
+                            {{ selected_run.status }}
+                        </span>
+                    {% endif %}
+
+                </div>
+
+                {% if selected_run %}
+
+                    <div class="run-overview">
+
+                        <div
+                            class="pass-ring"
+                            style="--pass-rate: {{ pass_rate }}%;"
+                        >
+
+                            <div class="ring-content">
+
+                                <div class="ring-value">
+                                    {{ pass_rate }}%
+                                </div>
+
+                                <div class="ring-label">
+                                    PASS RATE
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="result-rows">
+
+                            <div class="result-row">
+                                <div class="result-label">
+                                    <span class="legend-dot" style="background:var(--green)"></span>
+                                    Passed
+                                </div>
+
+                                <span class="result-number">
+                                    {{ selected_run.passed }}
+                                </span>
+                            </div>
+
+                            <div class="result-row">
+                                <div class="result-label">
+                                    <span class="legend-dot" style="background:var(--red)"></span>
+                                    Failed
+                                </div>
+
+                                <span class="result-number">
+                                    {{ selected_run.failed }}
+                                </span>
+                            </div>
+
+                            <div class="result-row">
+                                <div class="result-label">
+                                    <span class="legend-dot" style="background:var(--yellow)"></span>
+                                    Skipped
+                                </div>
+
+                                <span class="result-number">
+                                    {{ selected_run.skipped }}
+                                </span>
+                            </div>
+
+                            <div class="result-row">
+                                <div class="result-label">
+                                    <span class="legend-dot" style="background:var(--blue)"></span>
+                                    Errors
+                                </div>
+
+                                <span class="result-number">
+                                    {{ selected_run.errors }}
+                                </span>
+                            </div>
+
+                            <div class="result-row">
+                                <div class="result-label">
+                                    Execution Time
+                                </div>
+
+                                <span class="result-number">
+                                    {{ "%.2f"|format(selected_run.duration) }}s
+                                </span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="empty-state">
+                        No test executions recorded yet.
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+            <div class="panel">
+
+                <div class="panel-header">
+
+                    <div>
+                        <div class="panel-title">
+                            Test Distribution
+                        </div>
+
+                        <div class="panel-caption">
+                            Tests grouped by automation category
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="category-list">
+
+                    {% for category, count in category_stats.items() %}
+
+                        <div>
+
+                            <div class="category-top">
+
+                                <span class="category-name">
+                                    {{ category }}
+                                </span>
+
+                                <span class="category-count">
+                                    {{ count }} tests
+                                </span>
+
+                            </div>
+
+                            <div class="progress-track">
+
+                                <div
+                                    class="progress-fill"
+                                    style="--progress-width: {{ ((count / selected_run.total) * 100) if selected_run and selected_run.total else 0 }}%;"
+                                ></div>
+
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- EXECUTION HISTORY -->
+
+        <section class="panel history-panel" id="history">
+
+            <div class="panel-header">
+
+                <div>
+                    <div class="panel-title">
+                        Execution History
+                    </div>
+
+                    <div class="panel-caption">
+                        Previously recorded TestPilot executions
+                    </div>
+                </div>
+
+                <span class="panel-caption">
+                    {{ runs|length }} recent runs
+                </span>
+
+            </div>
+
+            {% if runs %}
+
+                <div class="history-table-wrapper">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>Run ID</th>
+                                <th>Date</th>
+                                <th>Total</th>
+                                <th>Passed</th>
+                                <th>Failed</th>
+                                <th>Duration</th>
+                                <th>Status</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            {% for run in runs %}
+
+                                <tr>
+
+                                    <td class="run-id">
+                                        {{ run.id[:8] }}
+                                    </td>
+
+                                    <td>
+                                        {{ run.started_at.replace("T", " ") }}
+                                    </td>
+
+                                    <td>{{ run.total }}</td>
+
+                                    <td style="color:var(--green)">
+                                        {{ run.passed }}
+                                    </td>
+
+                                    <td style="color:var(--red)">
+                                        {{ run.failed }}
+                                    </td>
+
+                                    <td>
+                                        {{ "%.2f"|format(run.duration) }}s
+                                    </td>
+
+                                    <td>
+                                        <span class="run-status {{ run.status }}">
+                                            {{ run.status }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <a
+                                            class="view-link"
+                                            href="{{ url_for('qa.dashboard', run_id=run.id) }}"
+                                        >
+                                            View →
+                                        </a>
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            {% else %}
+
+                <div class="empty-state">
+                    No execution history available.
+                </div>
+
+            {% endif %}
+
+        </section>
+
+        <!-- INDIVIDUAL TEST RESULTS -->
+
+        <section class="panel" id="results">
+
+            <div class="panel-header">
+
+                <div>
+                    <div class="panel-title">
+                        Individual Test Results
+                    </div>
+
+                    <div class="panel-caption">
+                        Detailed results from the selected execution
+                    </div>
+                </div>
+
+                <span class="panel-caption">
+                    {{ test_results|length }} test records
+                </span>
+
+            </div>
+
+            {% if test_results %}
+
+                <div class="history-table-wrapper">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>Test Name</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Duration</th>
+                                <th>Failure Details</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            {% for result in test_results %}
+
+                                <tr>
+
+                                    <td class="test-name">
+                                        {{ result.test_name }}
+                                    </td>
+
+                                    <td>
+                                        <span class="category-tag">
+                                            {{ result.category }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="test-status {{ result.status }}">
+                                            {{ result.status }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        {{ "%.3f"|format(result.duration) }}s
+                                    </td>
+
+                                    <td>
+
+                                        {% if result.failure_details %}
+
+                                            <div class="failure-details">
+                                                {{ result.failure_details[:250] }}
+                                            </div>
+
+                                            {% if result.screenshot_path %}
+                                                <div class="failure-details">
+                                                    Screenshot: {{ result.screenshot_path }}
+                                                </div>
+                                            {% endif %}
+
+                                        {% else %}
+
+                                            <span style="color:var(--muted)">—</span>
+
+                                        {% endif %}
+
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            {% else %}
+
+                <div class="empty-state">
+                    No individual test records available.
+                </div>
+
+            {% endif %}
+
+        </section>
+
+        <footer>
+            <span>TESTPILOT QA AUTOMATION PLATFORM</span>
+            <span>Automated Quality. Measurable Confidence.</span>
+        </footer>
+
+    </main>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const runButton = document.getElementById("runTestsButton");
+    const suiteSelect = document.getElementById("testSuite");
+    const statusElement = document.getElementById("executionStatus");
+    const messageElement = document.getElementById("executionMessage");
+    const logsElement = document.getElementById("executionLogs");
+
+    const currentSuiteElement = document.getElementById("currentSuite");
+    const startedAtElement = document.getElementById("startedAt");
+    const processIdElement = document.getElementById("processId");
+    const consoleIndicator = document.getElementById("consoleIndicator");
+
+    let pollingTimer = null;
+
+    // Tracks whether this page has observed an active execution.
+    let executionWasRunning = false;
+
+    // Prevents multiple automatic page reloads.
+    let autoReloadTriggered = false;
+
+    function setStatus(status) {
+
+        statusElement.textContent = status.toUpperCase();
+        statusElement.className = "run-status " + status;
+
+        const running = status === "running";
+
+        runButton.disabled = running;
+        suiteSelect.disabled = running;
+
+        runButton.textContent = running
+            ? "⏳ Tests Running..."
+            : "▶ Run Tests";
+
+        consoleIndicator.textContent = running
+            ? "● EXECUTING"
+            : "● " + status.toUpperCase();
+
+        consoleIndicator.style.color = running
+            ? "var(--blue)"
+            : status === "failed" || status === "interrupted"
+                ? "var(--red)"
+                : "var(--green)";
+    }
+
+    function showMessage(message, type = "") {
+
+        messageElement.textContent = message;
+        messageElement.className = "execution-message " + type;
+    }
+
+    function formatDate(value) {
+
+        if (!value) {
+            return "—";
+        }
+
+        return new Date(value).toLocaleString();
+    }
+
+    async function startTests() {
+
+        const testType = suiteSelect.value;
+
+        runButton.disabled = true;
+        suiteSelect.disabled = true;
+
+        executionWasRunning = false;
+        autoReloadTriggered = false;
+
+        showMessage("Starting test execution...");
+
+        try {
+
+            const response = await fetch("/api/qa/start", {
+
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    test_type: testType
+                })
+
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.message || "Unable to start tests."
+                );
+
+            }
+
+            executionWasRunning = true;
+
+            setStatus("running");
+
+            showMessage(
+                data.message,
+                "success"
+            );
+
+            currentSuiteElement.textContent =
+                data.execution.test_label || testType;
+
+            startedAtElement.textContent =
+                formatDate(data.execution.started_at);
+
+            processIdElement.textContent =
+                data.execution.pid || "—";
+
+            logsElement.textContent =
+                "Test execution started.\nWaiting for Pytest output...";
+
+            startPolling();
+
+        } catch (error) {
+
+            setStatus("idle");
+
+            showMessage(
+                error.message,
+                "error"
+            );
+
+        }
+
+    }
+
+    async function updateExecutionStatus() {
+
+        try {
+
+            const response = await fetch("/api/qa/status");
+
+            if (!response.ok) {
+                throw new Error("Unable to retrieve execution status.");
+            }
+
+            const data = await response.json();
+            const execution = data.execution;
+
+            const status = execution.status || "idle";
+
+            setStatus(status);
+
+            currentSuiteElement.textContent =
+                execution.test_label ||
+                execution.test_type ||
+                "Not selected";
+
+            startedAtElement.textContent =
+                formatDate(execution.started_at);
+
+            processIdElement.textContent =
+                execution.pid || "—";
+
+            if (status === "running") {
+
+                executionWasRunning = true;
+
+                showMessage(
+                    "Test execution is currently running."
+                );
+
+                return;
+
+            }
+
+            if (
+                status === "completed" ||
+                status === "failed"
+            ) {
+
+                stopPolling();
+
+                const successful = execution.exit_code === 0;
+
+                if (
+                    executionWasRunning &&
+                    !autoReloadTriggered
+                ) {
+
+                    autoReloadTriggered = true;
+
+                    showMessage(
+                        successful
+                            ? "Tests completed successfully! Updating dashboard analytics..."
+                            : "Test execution finished. Updating dashboard results...",
+                        successful ? "success" : "error"
+                    );
+
+                    consoleIndicator.textContent =
+                        "● EXECUTION FINISHED";
+
+                    // Retrieve the final terminal output first.
+                    await updateExecutionLogs();
+
+                    // Allow the results database and dashboard data
+                    // to settle before reloading the page.
+                    setTimeout(() => {
+
+                        window.location.reload();
+
+                    }, 1800);
+
+                } else {
+
+                    showMessage(
+                        successful
+                            ? "Test execution completed successfully."
+                            : "Test execution finished with failures. Inspect the console output.",
+                        successful ? "success" : "error"
+                    );
+
+                }
+
+                return;
+
+            }
+
+            if (status === "interrupted") {
+
+                stopPolling();
+
+                showMessage(
+                    "The previous execution was interrupted.",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            showMessage("Ready to execute tests.");
+
+        } catch (error) {
+
+            showMessage(error.message, "error");
+
+        }
+
+    }
+
+    async function updateExecutionLogs() {
+
+        try {
+
+            const response = await fetch("/api/qa/logs");
+
+            if (!response.ok) {
+                throw new Error("Unable to retrieve execution logs.");
+            }
+
+            const data = await response.json();
+
+            logsElement.textContent =
+                data.logs || "No execution logs available.";
+
+            logsElement.scrollTop =
+                logsElement.scrollHeight;
+
+        } catch (error) {
+
+            logsElement.textContent = error.message;
+
+        }
+
+    }
+
+    function startPolling() {
+
+        if (pollingTimer !== null) {
+            return;
+        }
+
+        // Poll every two seconds while execution is active.
+        pollingTimer = setInterval(async () => {
+
+            await updateExecutionStatus();
+
+            // Do not overwrite the final output during auto-refresh.
+            if (pollingTimer !== null) {
+                await updateExecutionLogs();
+            }
+
+        }, 2000);
+
+    }
+
+    function stopPolling() {
+
+        if (pollingTimer !== null) {
+
+            clearInterval(pollingTimer);
+            pollingTimer = null;
+
+        }
+
+    }
+
+    async function initializeExecutionPanel() {
+
+        await updateExecutionStatus();
+
+        await updateExecutionLogs();
+
+        // Resume monitoring if the page is opened during execution.
+        if (statusElement.textContent === "RUNNING") {
+
+            executionWasRunning = true;
+
+            startPolling();
+
+        }
+
+    }
+
+    initializeExecutionPanel();
+
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", async function () {
+
+    // Create analytics section
+    const analyticsSection = document.createElement("section");
+
+    analyticsSection.id = "advancedAnalytics";
+
+    analyticsSection.style.cssText = `
+        padding: 30px;
+        margin: 30px 0;
+        width: 100%;
+        box-sizing: border-box;
+        color: #ffffff;
+    `;
+
+    analyticsSection.innerHTML = `
+        <div style="margin-bottom:25px;">
+            <h2 style="font-size:24px; margin-bottom:8px;">
+                Advanced Analytics
+            </h2>
+            <p style="color:#9ca3af;">
+                Historical test execution insights and quality metrics
+            </p>
+        </div>
+
+        <div id="analyticsSummary"
+             style="display:grid;
+                    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+                    gap:18px;
+                    margin-bottom:25px;">
+        </div>
+
+        <div style="display:grid;
+                    grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+                    gap:22px;">
+
+            <div class="analytics-card">
+                <h3>Execution Trends</h3>
+                <canvas id="executionTrendChart"></canvas>
+            </div>
+
+            <div class="analytics-card">
+                <h3>Pass Rate Trend</h3>
+                <canvas id="passRateChart"></canvas>
+            </div>
+
+            <div class="analytics-card">
+                <h3>Execution Duration</h3>
+                <canvas id="durationChart"></canvas>
+            </div>
+
+            <div class="analytics-card">
+                <h3>Test Distribution</h3>
+                <canvas id="categoryChart"></canvas>
+            </div>
+
+        </div>
+    `;
+
+    document.body.appendChild(analyticsSection);
+
+    // Chart styling
+    const style = document.createElement("style");
+
+    style.textContent = `
+        .analytics-card {
+            background: #17152b;
+            border: 1px solid #302b50;
+            border-radius: 14px;
+            padding: 22px;
+            min-width: 0;
+            min-height: 320px;
+        }
+
+        .analytics-card h3 {
+            font-size: 16px;
+            margin-bottom: 22px;
+            color: #e5e7eb;
+        }
+
+        .analytics-card canvas {
+            max-height: 250px;
+        }
+
+        .analytics-stat {
+            background: #17152b;
+            border: 1px solid #302b50;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .analytics-stat h4 {
+            color: #9ca3af;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+
+        .analytics-stat p {
+            font-size: 26px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+    `;
+
+    document.head.appendChild(style);
+
+    // Retrieve analytics data
+    try {
+
+        const response = await fetch("/api/qa/analytics");
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(data.message || "Analytics request failed");
+        }
+
+        const summary = data.summary;
+        const trends = data.execution_trends;
+        const categories = data.category_distribution;
+
+        // Summary cards
+        const summaryContainer =
+            document.getElementById("analyticsSummary");
+
+        const statistics = [
+            ["Total Executions", summary.total_runs],
+            ["Total Tests", summary.total_tests],
+            ["Tests Passed", summary.passed],
+            ["Overall Pass Rate", summary.pass_rate + "%"]
+        ];
+
+        statistics.forEach(([label, value]) => {
+
+            const card = document.createElement("div");
+            card.className = "analytics-stat";
+
+            const heading = document.createElement("h4");
+            heading.textContent = label;
+
+            const number = document.createElement("p");
+            number.textContent = value;
+
+            card.appendChild(heading);
+            card.appendChild(number);
+
+            summaryContainer.appendChild(card);
+        });
+
+        // Shared chart configuration
+        Chart.defaults.color = "#a5a3b8";
+        Chart.defaults.borderColor = "#302b50";
+
+        const labels = trends.map(
+            run => run.run_id
+        );
+
+        // 1. Execution trends
+        new Chart(
+            document.getElementById("executionTrendChart"),
+            {
+                type: "line",
+
+                data: {
+                    labels: labels,
+
+                    datasets: [
+                        {
+                            label: "Passed",
+                            data: trends.map(run => run.passed),
+                            borderColor: "#22c55e",
+                            backgroundColor: "rgba(34,197,94,0.15)",
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: "Failed",
+                            data: trends.map(run => run.failed),
+                            borderColor: "#ef4444",
+                            backgroundColor: "rgba(239,68,68,0.15)",
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            }
+        );
+
+        // 2. Pass rate trend
+        new Chart(
+            document.getElementById("passRateChart"),
+            {
+                type: "line",
+
+                data: {
+                    labels: labels,
+
+                    datasets: [{
+                        label: "Pass Rate (%)",
+                        data: trends.map(run => run.pass_rate),
+                        borderColor: "#a78bfa",
+                        backgroundColor: "rgba(167,139,250,0.2)",
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            min: 0,
+                            max: 100
+                        }
+                    }
+                }
+            }
+        );
+
+        // 3. Execution duration
+        new Chart(
+            document.getElementById("durationChart"),
+            {
+                type: "bar",
+
+                data: {
+                    labels: labels,
+
+                    datasets: [{
+                        label: "Duration (seconds)",
+                        data: trends.map(run => run.duration),
+                        backgroundColor: "#8b5cf6",
+                        borderRadius: 6
+                    }]
+                },
+
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            }
+        );
+
+        // 4. Test distribution
+        new Chart(
+            document.getElementById("categoryChart"),
+            {
+                type: "doughnut",
+
+                data: {
+                    labels: Object.keys(categories),
+
+                    datasets: [{
+                        data: Object.values(categories),
+                        backgroundColor: [
+                            "#8b5cf6",
+                            "#06b6d4",
+                            "#22c55e",
+                            "#f59e0b",
+                            "#ef4444"
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: "bottom"
+                        }
+                    }
+                }
+            }
+        );
+
+    } catch (error) {
+
+        console.error("Analytics loading failed:", error);
+
+        document.getElementById("analyticsSummary").textContent =
+            "Unable to load analytics. Please check the server.";
+
+    }
+
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", async function () {
+
+    const section = document.createElement("section");
+
+    section.id = "failureAnalysis";
+
+    section.style.cssText = `
+        margin: 30px 0;
+        padding: 30px;
+        color: white;
+        width: 100%;
+        box-sizing: border-box;
+    `;
+
+    section.innerHTML = `
+        <div style="margin-bottom:25px;">
+            <h2 style="font-size:24px;">
+                Failure Analysis
+            </h2>
+
+            <p style="color:#9ca3af;">
+                Identify, investigate and track test failures.
+            </p>
+        </div>
+
+        <div id="failureSummary"
+             style="display:grid;
+                    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+                    gap:18px;
+                    margin-bottom:25px;">
+        </div>
+
+        <div style="
+            background:#17152b;
+            border:1px solid #302b50;
+            border-radius:14px;
+            padding:24px;
+        ">
+
+            <h3 style="margin-bottom:20px;">
+                Failure Records
+            </h3>
+
+            <div id="failureRecords">
+                Loading failure records...
+            </div>
+
+        </div>
+    `;
+
+    document.body.appendChild(section);
+
+    const summary = document.getElementById("failureSummary");
+    const records = document.getElementById("failureRecords");
+
+    function createCard(title, value) {
+
+        const card = document.createElement("div");
+
+        card.style.cssText = `
+            background:#17152b;
+            border:1px solid #302b50;
+            border-radius:12px;
+            padding:22px;
+        `;
+
+        const heading = document.createElement("h4");
+        heading.textContent = title;
+        heading.style.cssText = "color:#9ca3af;margin-bottom:10px;";
+
+        const number = document.createElement("p");
+        number.textContent = value;
+        number.style.cssText = "font-size:27px;font-weight:bold;";
+
+        card.appendChild(heading);
+        card.appendChild(number);
+
+        summary.appendChild(card);
+    }
+
+    try {
+
+        const response = await fetch("/api/qa/failures");
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(data.message || "Unable to load failures");
+        }
+
+        const failures = data.failures;
+
+        const failedCategories = new Set(
+            failures.map(failure => failure.category)
+        );
+
+        createCard("Total Failures", failures.length);
+        createCard("Affected Categories", failedCategories.size);
+        createCard(
+            "Latest Failure",
+            failures.length > 0
+                ? new Date(failures[0].created_at).toLocaleString()
+                : "None"
+        );
+
+        if (failures.length === 0) {
+
+            const emptyState = document.createElement("div");
+
+            emptyState.style.cssText = `
+                text-align:center;
+                padding:45px 20px;
+                color:#9ca3af;
+            `;
+
+            emptyState.innerHTML = `
+                <div style="font-size:38px;margin-bottom:12px;">
+                    ✓
+                </div>
+                <h3 style="color:#22c55e;margin-bottom:10px;">
+                    No Test Failures
+                </h3>
+                <p>
+                    All recorded test executions are passing.
+                    Failure records will appear here when tests fail.
+                </p>
+            `;
+
+            records.appendChild(emptyState);
+
+            return;
+        }
+
+        failures.forEach(failure => {
+
+            const item = document.createElement("div");
+
+            item.style.cssText = `
+                background:#211b35;
+                border:1px solid #49334f;
+                border-radius:10px;
+                padding:18px;
+                margin-bottom:15px;
+            `;
+
+            const title = document.createElement("h4");
+            title.textContent = failure.test_name;
+            title.style.marginBottom = "12px";
+
+            const metadata = document.createElement("p");
+            metadata.style.cssText = `
+                color:#a5a3b8;
+                font-size:13px;
+                line-height:1.8;
+            `;
+
+            metadata.textContent =
+                "Category: " + failure.category +
+                " | Date: " + new Date(failure.created_at).toLocaleString() +
+                " | Run ID: " + failure.run_id;
+
+            const details = document.createElement("details");
+            details.style.marginTop = "15px";
+
+            const summaryText = document.createElement("summary");
+            summaryText.textContent = "View Error Details";
+            summaryText.style.cursor = "pointer";
+
+            const errorText = document.createElement("pre");
+            errorText.textContent =
+                failure.failure_details || "No error details available.";
+
+            errorText.style.cssText = `
+                white-space:pre-wrap;
+                overflow-wrap:anywhere;
+                background:#100e1c;
+                padding:15px;
+                border-radius:8px;
+                margin-top:12px;
+                color:#fca5a5;
+                font-size:12px;
+            `;
+
+            details.appendChild(summaryText);
+            details.appendChild(errorText);
+
+            item.appendChild(title);
+            item.appendChild(metadata);
+            item.appendChild(details);
+
+            if (failure.screenshot_path) {
+
+                const screenshot = document.createElement("p");
+
+                screenshot.textContent =
+                    "Screenshot: " + failure.screenshot_path;
+
+                screenshot.style.cssText = `
+                    margin-top:12px;
+                    color:#a78bfa;
+                    font-size:13px;
+                `;
+
+                item.appendChild(screenshot);
+            }
+
+            records.appendChild(item);
+        });
+
+    } catch (error) {
+
+        console.error("Failure analysis error:", error);
+
+        records.textContent =
+            "Unable to load failure records. Check the server.";
+    }
+
+});
+</script>
+
+</body>
+</html>
