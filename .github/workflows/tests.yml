@@ -111,6 +111,7 @@ jobs:
             Write-Host "Executing automated tests with coverage..."
 
             pytest tests -n 2 `
+              --cov-fail-under=90 `
               --cov=application `
               --cov-report=term-missing `
               --cov-report=html:reports/coverage `
